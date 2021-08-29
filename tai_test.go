@@ -3,6 +3,7 @@ package tai_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/brandondube/tai"
 )
@@ -39,5 +40,15 @@ func BenchmarkAsGregWithFmt(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		g := now.AsGreg()
 		fmt.Sprintf("%d %d %d %d %d %d %d", g.Year, g.Month, g.Day, g.Hour, g.Minute, g.Sec, g.Asec)
+	}
+}
+
+func BenchmarkTimeWithoutFmt(b *testing.B) {
+	// 35.92 ns; tai ~= 33% faster
+	now := time.Now()
+	for i := 0; i < b.N; i++ {
+		now.Date()
+		now.Second()
+		now.Nanosecond()
 	}
 }
