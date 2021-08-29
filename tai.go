@@ -9,6 +9,18 @@ import (
 const (
 	// Second is the base unit for TAI and UNIX time since epoch
 	Second = 1
+
+	// Minute is the number of seconds per minute
+	Minute = 60 * Second
+
+	// Hour is the number of seconds per hour
+	Hour = 60 * Minute
+
+	// Day is the number of seconds per day
+	Day = 24 * Hour
+
+	twelveHours = 12 * Hour
+
 	// Year is the exact number of seconds per Julian year
 	Year = 31556952 * Second // == 365.2425 days
 
@@ -198,6 +210,27 @@ func (t TAI) AsTime() time.Time {
 	skew := skewUnix(s)
 	return time.Unix(s+skew, ns)
 
+}
+
+// AsGreg converts a TAI timestamp to Greg format
+func (t TAI) AsGreg() Greg {
+	J := SecsToJulianDay(t.Sec)
+	Y, M, D := JulianDayToGregorianCalendar(J)
+	v := (t.Sec - unixSkewFwd) % Day
+	s := v
+	hr := s / Hour
+	s = s % Hour
+	mn := s / Minute
+	v -= hr*Hour + mn*Minute
+	return Greg{
+		Year:   Y,
+		Month:  uint8(M),
+		Day:    uint8(D),
+		Hour:   uint8(hr),
+		Minute: uint8(mn),
+		Sec:    uint8(v),
+		Asec:   t.Asec,
+	}
 }
 
 // Unix returns the UNIX representation of t, excluding leap seconds with nanosecond precision
