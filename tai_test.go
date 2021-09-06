@@ -11,7 +11,7 @@ import (
 )
 
 func TestFuzzTaiToGreg(t *testing.T) {
-	fuzzTaiToGreg(t, 100)
+	fuzzTaiToGreg(t, 1e6)
 }
 func fuzzTaiToGreg(t *testing.T, cases int) {
 	for i := 0; i < cases; i++ {
@@ -21,10 +21,18 @@ func fuzzTaiToGreg(t *testing.T, cases int) {
 		hour := rand.Intn(24)
 		minute := rand.Intn(60)
 		second := rand.Intn(60)
-		tm := time.Date(year, time.Month(month), day, hour, minute, second, 0, time.UTC)
-		unix := tm.Unix()
-		ti := tai.Unix(unix, 0)
-		date := ti.AsGreg()
+		if month == 0 {
+			month = 1
+		}
+		if day == 0 {
+			day = 1
+		}
+		// tm := time.Date(year, time.Month(month), day, hour, minute, second, 0, time.UTC)
+		// unix := tm.Unix()
+		// ti := tai.Unix(unix, 0)
+		// date := ti.AsGreg()
+		ta := tai.Date(year, month, day).AddHMS(hour, minute, second)
+		date := ta.AsGreg()
 		var failparts []string
 		if date.Year != int64(year) {
 			failparts = append(failparts, fmt.Sprintf("wrong year: got %d expected %d", date.Year, year))
@@ -38,8 +46,8 @@ func fuzzTaiToGreg(t *testing.T, cases int) {
 		if date.Hour != uint8(hour) {
 			failparts = append(failparts, fmt.Sprintf("wrong hour: got %d expected %d", date.Hour, hour))
 		}
-		if date.Minute != uint8(minute) {
-			failparts = append(failparts, fmt.Sprintf("wrong minute: got %d expected %d", date.Minute, minute))
+		if date.Min != uint8(minute) {
+			failparts = append(failparts, fmt.Sprintf("wrong minute: got %d expected %d", date.Min, minute))
 		}
 		if date.Sec != uint8(second) {
 			failparts = append(failparts, fmt.Sprintf("wrong sec: got %d expected %d", date.Sec, second))
@@ -48,6 +56,7 @@ func fuzzTaiToGreg(t *testing.T, cases int) {
 			failparts = append(failparts, fmt.Sprintf("wrong subsec: got %d expected %d", date.Asec, 0))
 		}
 		if len(failparts) != 0 {
+			failparts = append(failparts, fmt.Sprintf("input Year=%d, Month=%d, Day=%d, Hour=%d, Min=%d, Sec=%d", year, month, day, hour, minute, second))
 			t.Fatal(strings.Join(failparts, "\n"))
 		}
 	}
@@ -56,20 +65,25 @@ func fuzzTaiToGreg(t *testing.T, cases int) {
 func TestLessSpecialCasesGreg(t *testing.T) {
 	cases := []struct {
 		descr string
-		inp   int
+		inp   tai.TAI
 		exp   tai.Greg
 	}{
-		{"Positive1Y", +1 * tai.Year, tai.Greg{Year: 1959, Month: 1, Day: 1}}, // all others zero
-		{"Positive2Y", +2 * tai.Year, tai.Greg{Year: 1960, Month: 1, Day: 1}}, // all others zero
-		{"Negative1Y", -1 * tai.Year, tai.Greg{Year: 1957, Month: 1, Day: 1}}, // all others zero
-		{"Negative2Y", -2 * tai.Year, tai.Greg{Year: 1956, Month: 1, Day: 1}}, // all others zero
-		{"Negative3Y", -3 * tai.Year, tai.Greg{Year: 1955, Month: 1, Day: 1}}, // all others zero
-		{"Negative4Y", -4 * tai.Year, tai.Greg{Year: 1954, Month: 1, Day: 1}}, // all others zero
-		{"Positive1Y1M1D", 1*tai.Year + 32*tai.Day, tai.Greg{Year: 1959, Month: 2, Day: 2}},
+		{"Positive1Y", tai.Date(1959, 1, 1), tai.Greg{Year: 1959, Month: 1, Day: 1}}, // all others zero
+		{"Positive2Y", tai.Date(1960, 1, 1), tai.Greg{Year: 1960, Month: 1, Day: 1}}, // all others zero
+		{"Negative1Y", tai.Date(1957, 1, 1), tai.Greg{Year: 1957, Month: 1, Day: 1}}, // all others zero
+		{"Negative2Y", tai.Date(1956, 1, 1), tai.Greg{Year: 1956, Month: 1, Day: 1}}, // all others zero
+		{"Negative3Y", tai.Date(1955, 1, 1), tai.Greg{Year: 1955, Month: 1, Day: 1}}, // all others zero
+		{"Negative4Y", tai.Date(1954, 1, 1), tai.Greg{Year: 1954, Month: 1, Day: 1}}, // all others zero
+		{"Positive1Y1M1D", tai.Date(1959, 2, 2), tai.Greg{Year: 1959, Month: 2, Day: 2}},
+		{"Negative1Y1M1D", tai.Date(1956, 2, 2), tai.Greg{Year: 1956, Month: 2, Day: 2}},
+		{"DayOfChangeToGregorian", tai.Date(1582, tai.October, 15), tai.Greg{Year: 1582, Month: 10, Day: 15}},
+		{"LastJulianDay", tai.Date(1582, tai.October, 4), tai.Greg{Year: 1582, Month: 10, Day: 4}},
+		{"BrokenFuzzCase1NoHMS", tai.Date(81, 3, 15), tai.Greg{Year: 81, Month: 3, Day: 15}},
+		{"BrokenFuzzCase1", tai.Date(81, 3, 15).AddHMS(11, 1, 18), tai.Greg{Year: 81, Month: 3, Day: 15, Hour: 11, Min: 1, Sec: 18}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.descr, func(t *testing.T) {
-			actual := tai.TAI{Sec: int64(tc.inp)}.AsGreg()
+			actual := tc.inp.AsGreg()
 			if !actual.Eq(tc.exp) {
 				t.Fatalf("expected %+v, got %+v", tc.exp, actual)
 			}
@@ -92,8 +106,8 @@ func TestZeroTaiIsEpoch(t *testing.T) {
 	if date.Hour != 0 {
 		failparts = append(failparts, fmt.Sprintf("wrong hour: got %d expected %d", date.Hour, 0))
 	}
-	if date.Minute != 0 {
-		failparts = append(failparts, fmt.Sprintf("wrong minute: got %d expected %d", date.Minute, 0))
+	if date.Min != 0 {
+		failparts = append(failparts, fmt.Sprintf("wrong minute: got %d expected %d", date.Min, 0))
 	}
 	if date.Sec != 0 {
 		failparts = append(failparts, fmt.Sprintf("wrong sec: got %d expected %d", date.Sec, 0))
@@ -106,9 +120,18 @@ func TestZeroTaiIsEpoch(t *testing.T) {
 	}
 }
 
+func TestTaiFormat(t *testing.T) {
+	//2009-11-10 23:00:00
+	ta := tai.Date(2009, 11, 10).AddHMS(23, 0, 0)
+	out := ta.Format(tai.RFC3339)
+	if out != "2009-11-10T23:00:00Z" {
+		t.Fail()
+	}
+}
+
 func TestUnixEpoch(t *testing.T) {
 	var ta tai.TAI
-	ta.Sec = 12 * tai.Year
+	ta.Sec = 4383 * tai.Day // this is the unix Epoch (12y)
 	date := ta.AsGreg()
 	var failparts []string
 	if date.Year != 1970 {
@@ -123,8 +146,8 @@ func TestUnixEpoch(t *testing.T) {
 	if date.Hour != 0 {
 		failparts = append(failparts, fmt.Sprintf("wrong hour: got %d expected %d", date.Hour, 0))
 	}
-	if date.Minute != 0 {
-		failparts = append(failparts, fmt.Sprintf("wrong minute: got %d expected %d", date.Minute, 0))
+	if date.Min != 0 {
+		failparts = append(failparts, fmt.Sprintf("wrong minute: got %d expected %d", date.Min, 0))
 	}
 	if date.Sec != 0 {
 		failparts = append(failparts, fmt.Sprintf("wrong sec: got %d expected %d", date.Sec, 0))
@@ -141,6 +164,13 @@ func BenchmarkTaiAsTime(b *testing.B) {
 	now := tai.Now()
 	for i := 0; i < b.N; i++ {
 		now.AsTime()
+	}
+}
+
+func BenchmarkTaiFormat(b *testing.B) {
+	now := tai.Now()
+	for i := 0; i < b.N; i++ {
+		now.Format(tai.RFC3339Micro)
 	}
 }
 
@@ -162,7 +192,7 @@ func BenchmarkAsGregWithFmt(b *testing.B) {
 	now := tai.Now()
 	for i := 0; i < b.N; i++ {
 		g := now.AsGreg()
-		fmt.Sprintf("%d %d %d %d %d %d %d", g.Year, g.Month, g.Day, g.Hour, g.Minute, g.Sec, g.Asec)
+		fmt.Sprintf("%d %d %d %d %d %d %d", g.Year, g.Month, g.Day, g.Hour, g.Min, g.Sec, g.Asec)
 	}
 }
 
@@ -173,5 +203,12 @@ func BenchmarkTimeWithoutFmt(b *testing.B) {
 		now.Date()
 		now.Second()
 		now.Nanosecond()
+	}
+}
+
+func BenchmarkTimeFormat(b *testing.B) {
+	now := time.Now()
+	for i := 0; i < b.N; i++ {
+		now.Format(time.RFC3339Nano)
 	}
 }

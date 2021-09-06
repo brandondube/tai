@@ -234,29 +234,32 @@ func FromGreg(g Greg) TAI {
 func (t TAI) AsGreg() Greg {
 	d := DaysFromSecsEpoch(int(t.Sec))
 	Y, M, D := CivilFromDays(d)
-	day := t.Sec / Day
+	// day := t.Sec / Day
 	rem := t.Sec % Day
+	// these two for loops are needed
+	// because Go has truncated division
+	// the latter is needed because the former
+	// may run for multiple iterations
 	for rem < 0 {
 		rem += Day
-		day--
+		D--
 	}
 	for rem >= Day {
 		rem -= Day
-		day++
+		D++
 	}
 	hr := rem / Hour
 	rem %= Hour
 	mn := rem / Minute
 	rem %= Minute
-	t.Sec %= Minute
 	return Greg{
-		Year:   int64(Y),
-		Month:  uint8(M),
-		Day:    uint8(D),
-		Hour:   uint8(hr),
-		Minute: uint8(mn),
-		Sec:    uint8(t.Sec),
-		Asec:   t.Asec,
+		Year:  int64(Y),
+		Month: uint8(M),
+		Day:   uint8(D),
+		Hour:  uint8(hr),
+		Min:   uint8(mn),
+		Sec:   uint8(rem),
+		Asec:  t.Asec,
 	}
 }
 
@@ -328,8 +331,26 @@ func FromTime(t time.Time) TAI {
 }
 
 // Format converts t into a textual representation similar to strftime and
-// similar functions
+// similar functions.  The valid specifiers are:
 //
+// - %a weekday as abbreviated name, e.g. Mon
+// - %A Unabbreviated weekday, e.g. Monday
+// - %w Weekday as a single digit number.  0==Sunday
+// - %d Day of month as a two digit number, e.g. 12.
+// - %b Month as abbreviated name, e.g. Sept
+// - %B Unabbreviated Month, e.g. September
+// - %m Month as a two digit number, e.g. 03
+// - %y Year without century or millenium; two digits, e.g. 2012==12
+// - %Y Year with century/millenium, e.g. 2021
+// - %H 24-hour clock Hour as a two digit number, e.g. 22
+// - %I 12-hour clock Hour as a two digit number, e.g. 12
+// - %p AM or PM
+// - %M Minute as a two digit number, e.g. 03
+// - %S Second as a two digit number, e.g. 59
+// - %f Microsecond as a six digit decimal number
+// - %z The letter "Z" (timezone, but TAI only exists in the UTC timezone)
+// - %j Ordinal day of year, e.g. 364
+// - %U Week number of the year, with Sunday as the first day of the week
 // Format panics if an unknown specifier is used.
 func (t TAI) Format(fmtspec string) string {
 	f := []rune(fmtspec)
@@ -362,6 +383,10 @@ func (t TAI) Format(fmtspec string) string {
 	for i := 0; i < len(f); i++ {
 		next = f[i]
 		if next == '%' {
+			if last == '%' {
+				// allow users to write percent signs
+				b.WriteRune('%')
+			}
 			last = next
 			continue
 		}
@@ -401,7 +426,7 @@ func (t TAI) Format(fmtspec string) string {
 				}
 				b.WriteString("AM")
 			case 'M':
-				b.WriteString(fmt.Sprintf("%02d", g.Minute))
+				b.WriteString(fmt.Sprintf("%02d", g.Min))
 			case 'S':
 				b.WriteString(fmt.Sprintf("%02d", g.Sec))
 			case 'f':
