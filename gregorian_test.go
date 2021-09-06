@@ -1,12 +1,13 @@
 package tai_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/brandondube/tai"
 )
 
-func TestIsLeapYearValidYears(t *testing.T) {
+func TestIsLeapYearCorrect(t *testing.T) {
 	cases := []struct {
 		descr string
 		inp   int
@@ -32,22 +33,41 @@ func TestIsLeapYearValidYears(t *testing.T) {
 	}
 }
 
-func TestIsLeapYearPanicsForInvalidYears(t *testing.T) {
-	cases := []struct {
-		descr string
-		inp   int
-	}{
-		{"TestY0", 0},
-		{"TestY-1", -1},
+func TestZeroDayIsEpoch(t *testing.T) {
+	y, m, d := tai.CivilFromDays(0)
+	if y != 1958 {
+		t.Fatal(fmt.Sprintf("day zero had year of %d, expected 1958", y))
 	}
-	for _, tc := range cases {
-		t.Run(tc.descr, func(t *testing.T) {
-			defer func() {
-				if r := recover(); r == nil { // failed to panic
-					t.Fatalf("for year %d, expected IsLeapYear to panic", tc.inp)
+	if m != 1 {
+		t.Fatal(fmt.Sprintf("day zero had month of %d, expected 1", m))
+	}
+	if d != 1 {
+		t.Fatal(fmt.Sprintf("day zero had day of %d, expected 1", d))
+	}
+}
+
+func TestCivilEpochIsZero(t *testing.T) {
+	d := tai.DaysFromCivil(1958, 1, 1)
+	if d != 0 {
+		t.Fatal(fmt.Sprintf("epoch had day of %d, expected zero", d))
+	}
+}
+
+func TestHammer(t *testing.T) {
+	const (
+		startYear = -4716
+		endYear   = 10000
+	)
+	for y := startYear; y < endYear; y++ {
+		for m := 1; m < 13; m++ {
+			e := tai.DaysInMonth(m, y)
+			for d := 1; d <= e; d++ {
+				ta := tai.Date(y, m, d)
+				g := ta.AsGreg()
+				if g.Year != int64(y) || g.Month != uint8(m) || g.Day != uint8(d) {
+					t.Fatal(fmt.Sprintf("input Y=%d, m=%d, d=%d failed, got Y=%d, m=%d, d=%d", y, m, d, g.Year, g.Month, g.Day))
 				}
-			}()
-			tai.IsLeapYear(tc.inp)
-		})
+			}
+		}
 	}
 }

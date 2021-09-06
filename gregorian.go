@@ -1,13 +1,10 @@
 package tai
 
-import (
-	"fmt"
-)
-
 // maxint64 / seconds per year = 292277024626
 // 292,277,024,626
 // year 292 billion is when this becomes invalid
 // (perfectly fine)
+
 const (
 	notAMonth = iota
 	January
@@ -149,9 +146,6 @@ func IsLeapYear(year int) bool {
 	For example, the years 1700, 1800, and 1900 are not leap years,
 	but the years 1600 and 2000 are.
 	*/
-	if year < 1 {
-		panic(fmt.Sprintf("tai/IsLeapYear: got year < 1 %d, not part of Gregorian Calendar", year))
-	}
 	if year%4 == 0 { // every year that is exactly divisible by four
 		if year%100 == 0 { // except for years that are exactly divisible by 100
 			return year%400 == 0 // if they are exactly divisible by 400
@@ -267,19 +261,28 @@ func SecsEpochFromDays(days int) int {
 	return days * Day
 }
 
+// DaysInMonth returns the number of days in the given month and year
+func DaysInMonth(m, y int) int {
+	ily := IsLeapYear(y)
+	if ily {
+		return daysPerLeapMonth[m]
+	}
+	return daysPerNonLeapMonth[m]
+}
+
+// Greg
+// formerly all i64 = 7x8 = 56 B
+// now two i64 + 5 u8 = 21 B
+
 // Greg represents a moment in the Proleptic Gregorian Calendar and the UTC time system
-//
-// Calculations that return Gregs must include leap seconds
 type Greg struct {
-	// formerly all i64 = 7x8 = 56 B
-	// now two i64 + 5 u8 = 21 B
-	Asec   int64
-	Year   int64
-	Month  uint8
-	Day    uint8
-	Hour   uint8
-	Minute uint8
-	Sec    uint8
+	Asec  int64
+	Year  int64
+	Month uint8
+	Day   uint8
+	Hour  uint8
+	Min   uint8
+	Sec   uint8
 }
 
 // Before returns true if g is before o
@@ -303,6 +306,6 @@ func (g Greg) Eq(o Greg) bool {
 		g.Month == o.Month &&
 		g.Day == o.Day &&
 		g.Hour == o.Hour &&
-		g.Minute == o.Minute &&
+		g.Min == o.Min &&
 		g.Sec == o.Sec)
 }
