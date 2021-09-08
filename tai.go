@@ -26,8 +26,7 @@ const (
 	Day = 24 * Hour
 
 	// Year is the exact number of seconds per year in the TAI system
-	yearUnix      = 31564800
-	Year          = yearUnix
+	Year          = 31564800 * Second
 	unixEpochSkew = 4383 * Day
 	// FiveYearUnix      = 5 * YearUnix
 	// UnixFiveYInternet = 157795200
@@ -51,7 +50,7 @@ var (
 	LastKnownBulletinCUpdate = 62
 	// LastKnownBulletinCTime is the date on which the last known Bulletin C
 	// was released
-	LastKnownBulletinCTimestamp = Gregorian{Year: 2021, Month: July, Day: 5} // time.Date(2021, time.July, 05, 0, 0, 0, 0, time.UTC)
+	LastKnownBulletinCTimestamp = Gregorian{Year: 2021, Month: July, Day: 5}
 
 	// PkgUpToDateUntil is the moment in time at which the last known bulletin C
 	// update is made invalid
@@ -339,23 +338,41 @@ func FromTime(t time.Time) TAI {
 // similar functions.  The valid specifiers are:
 //
 // - %a weekday as abbreviated name, e.g. Mon
+//
 // - %A Unabbreviated weekday, e.g. Monday
+//
 // - %w Weekday as a single digit number.  0==Sunday
+//
 // - %d Day of month as a two digit number, e.g. 12.
+//
 // - %b Month as abbreviated name, e.g. Sept
+//
 // - %B Unabbreviated Month, e.g. September
+//
 // - %m Month as a two digit number, e.g. 03
+//
 // - %y Year without century or millenium; two digits, e.g. 2012==12
+//
 // - %Y Year with century/millenium, e.g. 2021
+//
 // - %H 24-hour clock Hour as a two digit number, e.g. 22
+//
 // - %I 12-hour clock Hour as a two digit number, e.g. 12
+//
 // - %p AM or PM
+//
 // - %M Minute as a two digit number, e.g. 03
+//
 // - %S Second as a two digit number, e.g. 59
+//
 // - %f Microsecond as a six digit decimal number
+//
 // - %z The letter "Z" (timezone, but TAI only exists in the UTC timezone)
+//
 // - %j Ordinal day of year, e.g. 364
+//
 // - %U Week number of the year, with Sunday as the first day of the week
+//
 // Format panics if an unknown specifier is used.
 func (t TAI) Format(fmtspec string) string {
 	f := []rune(fmtspec)
