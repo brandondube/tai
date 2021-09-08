@@ -151,6 +151,8 @@ func RegisterLeapSecond(unixUTC int64, cumulativeSkew int64) error {
 // to have been published by IERS when pkg tai was last updated, this function
 // panics.
 func RemoveLeapSecond(unixUTC int64) {
+	leaplock.Lock()
+	defer leaplock.Unlock()
 	start := len(leaps) - 1
 	for i := start; i > 0; i-- {
 		if unixUTC == leaps[i].UnixUTC {
