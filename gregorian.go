@@ -6,8 +6,7 @@ package tai
 // (perfectly fine)
 
 const (
-	notAMonth = iota
-	January
+	January = iota + 1
 	February
 	March
 	April
