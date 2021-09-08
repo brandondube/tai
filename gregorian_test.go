@@ -64,7 +64,7 @@ func TestHammer(t *testing.T) {
 			for d := 1; d <= e; d++ {
 				ta := tai.Date(y, m, d)
 				g := ta.AsGreg()
-				if g.Year != int64(y) || g.Month != uint8(m) || g.Day != uint8(d) {
+				if g.Year != y || g.Month != m || g.Day != d {
 					t.Fatal(fmt.Sprintf("input Y=%d, m=%d, d=%d failed, got Y=%d, m=%d, d=%d", y, m, d, g.Year, g.Month, g.Day))
 				}
 			}

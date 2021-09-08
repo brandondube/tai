@@ -276,12 +276,12 @@ func DaysInMonth(m, y int) int {
 // Greg represents a moment in the Proleptic Gregorian Calendar and the UTC time system
 type Greg struct {
 	Asec  int64
-	Year  int64
-	Month uint8
-	Day   uint8
-	Hour  uint8
-	Min   uint8
-	Sec   uint8
+	Year  int
+	Month int
+	Day   int
+	Hour  int
+	Min   int
+	Sec   int
 }
 
 // Before returns true if g is before o

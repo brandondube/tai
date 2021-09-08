@@ -253,12 +253,12 @@ func (t TAI) AsGreg() Greg {
 	mn := rem / Minute
 	rem %= Minute
 	return Greg{
-		Year:  int64(Y),
-		Month: uint8(M),
-		Day:   uint8(D),
-		Hour:  uint8(hr),
-		Min:   uint8(mn),
-		Sec:   uint8(rem),
+		Year:  Y,
+		Month: M,
+		Day:   D,
+		Hour:  int(hr),
+		Min:   int(mn),
+		Sec:   int(rem),
 		Asec:  t.Asec,
 	}
 }

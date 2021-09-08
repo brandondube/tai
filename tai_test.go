@@ -34,22 +34,22 @@ func fuzzTaiToGreg(t *testing.T, cases int) {
 		ta := tai.Date(year, month, day).AddHMS(hour, minute, second)
 		date := ta.AsGreg()
 		var failparts []string
-		if date.Year != int64(year) {
+		if date.Year != year {
 			failparts = append(failparts, fmt.Sprintf("wrong year: got %d expected %d", date.Year, year))
 		}
-		if date.Month != uint8(month) {
+		if date.Month != month {
 			failparts = append(failparts, fmt.Sprintf("wrong month: got %d expected %d", date.Month, month))
 		}
-		if date.Day != uint8(day) {
+		if date.Day != day {
 			failparts = append(failparts, fmt.Sprintf("wrong day: got %d expected %d", date.Day, day))
 		}
-		if date.Hour != uint8(hour) {
+		if date.Hour != hour {
 			failparts = append(failparts, fmt.Sprintf("wrong hour: got %d expected %d", date.Hour, hour))
 		}
-		if date.Min != uint8(minute) {
+		if date.Min != minute {
 			failparts = append(failparts, fmt.Sprintf("wrong minute: got %d expected %d", date.Min, minute))
 		}
-		if date.Sec != uint8(second) {
+		if date.Sec != second {
 			failparts = append(failparts, fmt.Sprintf("wrong sec: got %d expected %d", date.Sec, second))
 		}
 		if date.Asec != 0 {
