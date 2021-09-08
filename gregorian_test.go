@@ -59,7 +59,7 @@ func TestHammer(t *testing.T) {
 		endYear   = 10000
 	)
 	for y := startYear; y < endYear; y++ {
-		for m := 1; m < 13; m++ {
+		for m := 1; m <= 12; m++ {
 			e := tai.DaysInMonth(m, y)
 			for d := 1; d <= e; d++ {
 				ta := tai.Date(y, m, d)
