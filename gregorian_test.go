@@ -63,7 +63,7 @@ func TestHammer(t *testing.T) {
 			e := tai.DaysInMonth(m, y)
 			for d := 1; d <= e; d++ {
 				ta := tai.Date(y, m, d)
-				g := ta.AsGreg()
+				g := ta.AsGregorian()
 				if g.Year != y || g.Month != m || g.Day != d {
 					t.Fatal(fmt.Sprintf("input Y=%d, m=%d, d=%d failed, got Y=%d, m=%d, d=%d", y, m, d, g.Year, g.Month, g.Day))
 				}

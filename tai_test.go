@@ -27,12 +27,8 @@ func fuzzTaiToGreg(t *testing.T, cases int) {
 		if day == 0 {
 			day = 1
 		}
-		// tm := time.Date(year, time.Month(month), day, hour, minute, second, 0, time.UTC)
-		// unix := tm.Unix()
-		// ti := tai.Unix(unix, 0)
-		// date := ti.AsGreg()
 		ta := tai.Date(year, month, day).AddHMS(hour, minute, second)
-		date := ta.AsGreg()
+		date := ta.AsGregorian()
 		var failparts []string
 		if date.Year != year {
 			failparts = append(failparts, fmt.Sprintf("wrong year: got %d expected %d", date.Year, year))
@@ -66,24 +62,24 @@ func TestLessSpecialCasesGreg(t *testing.T) {
 	cases := []struct {
 		descr string
 		inp   tai.TAI
-		exp   tai.Greg
+		exp   tai.Gregorian
 	}{
-		{"Positive1Y", tai.Date(1959, 1, 1), tai.Greg{Year: 1959, Month: 1, Day: 1}}, // all others zero
-		{"Positive2Y", tai.Date(1960, 1, 1), tai.Greg{Year: 1960, Month: 1, Day: 1}}, // all others zero
-		{"Negative1Y", tai.Date(1957, 1, 1), tai.Greg{Year: 1957, Month: 1, Day: 1}}, // all others zero
-		{"Negative2Y", tai.Date(1956, 1, 1), tai.Greg{Year: 1956, Month: 1, Day: 1}}, // all others zero
-		{"Negative3Y", tai.Date(1955, 1, 1), tai.Greg{Year: 1955, Month: 1, Day: 1}}, // all others zero
-		{"Negative4Y", tai.Date(1954, 1, 1), tai.Greg{Year: 1954, Month: 1, Day: 1}}, // all others zero
-		{"Positive1Y1M1D", tai.Date(1959, 2, 2), tai.Greg{Year: 1959, Month: 2, Day: 2}},
-		{"Negative1Y1M1D", tai.Date(1956, 2, 2), tai.Greg{Year: 1956, Month: 2, Day: 2}},
-		{"DayOfChangeToGregorian", tai.Date(1582, tai.October, 15), tai.Greg{Year: 1582, Month: 10, Day: 15}},
-		{"LastJulianDay", tai.Date(1582, tai.October, 4), tai.Greg{Year: 1582, Month: 10, Day: 4}},
-		{"BrokenFuzzCase1NoHMS", tai.Date(81, 3, 15), tai.Greg{Year: 81, Month: 3, Day: 15}},
-		{"BrokenFuzzCase1", tai.Date(81, 3, 15).AddHMS(11, 1, 18), tai.Greg{Year: 81, Month: 3, Day: 15, Hour: 11, Min: 1, Sec: 18}},
+		{"Positive1Y", tai.Date(1959, 1, 1), tai.Gregorian{Year: 1959, Month: 1, Day: 1}}, // all others zero
+		{"Positive2Y", tai.Date(1960, 1, 1), tai.Gregorian{Year: 1960, Month: 1, Day: 1}}, // all others zero
+		{"Negative1Y", tai.Date(1957, 1, 1), tai.Gregorian{Year: 1957, Month: 1, Day: 1}}, // all others zero
+		{"Negative2Y", tai.Date(1956, 1, 1), tai.Gregorian{Year: 1956, Month: 1, Day: 1}}, // all others zero
+		{"Negative3Y", tai.Date(1955, 1, 1), tai.Gregorian{Year: 1955, Month: 1, Day: 1}}, // all others zero
+		{"Negative4Y", tai.Date(1954, 1, 1), tai.Gregorian{Year: 1954, Month: 1, Day: 1}}, // all others zero
+		{"Positive1Y1M1D", tai.Date(1959, 2, 2), tai.Gregorian{Year: 1959, Month: 2, Day: 2}},
+		{"Negative1Y1M1D", tai.Date(1956, 2, 2), tai.Gregorian{Year: 1956, Month: 2, Day: 2}},
+		{"DayOfChangeToGregorian", tai.Date(1582, tai.October, 15), tai.Gregorian{Year: 1582, Month: 10, Day: 15}},
+		{"LastJulianDay", tai.Date(1582, tai.October, 4), tai.Gregorian{Year: 1582, Month: 10, Day: 4}},
+		{"BrokenFuzzCase1NoHMS", tai.Date(81, 3, 15), tai.Gregorian{Year: 81, Month: 3, Day: 15}},
+		{"BrokenFuzzCase1", tai.Date(81, 3, 15).AddHMS(11, 1, 18), tai.Gregorian{Year: 81, Month: 3, Day: 15, Hour: 11, Min: 1, Sec: 18}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.descr, func(t *testing.T) {
-			actual := tc.inp.AsGreg()
+			actual := tc.inp.AsGregorian()
 			if !actual.Eq(tc.exp) {
 				t.Fatalf("expected %+v, got %+v", tc.exp, actual)
 			}
@@ -92,7 +88,7 @@ func TestLessSpecialCasesGreg(t *testing.T) {
 }
 func TestZeroTaiIsEpoch(t *testing.T) {
 	var ta tai.TAI
-	date := ta.AsGreg()
+	date := ta.AsGregorian()
 	var failparts []string
 	if date.Year != 1958 {
 		failparts = append(failparts, fmt.Sprintf("wrong year: got %d expected %d", date.Year, 1958))
@@ -132,7 +128,7 @@ func TestTaiFormat(t *testing.T) {
 func TestUnixEpoch(t *testing.T) {
 	var ta tai.TAI
 	ta.Sec = 4383 * tai.Day // this is the unix Epoch (12y)
-	date := ta.AsGreg()
+	date := ta.AsGregorian()
 	var failparts []string
 	if date.Year != 1970 {
 		failparts = append(failparts, fmt.Sprintf("wrong year: got %d expected %d", date.Year, 1970))
@@ -177,21 +173,21 @@ func BenchmarkTaiFormat(b *testing.B) {
 // top level result of these two benchmarks: can reduce space by > 50% without
 // compromising time -> do so (keep changes)
 
-func BenchmarkAsGregWithoutFmt(b *testing.B) {
+func BenchmarkAsGregorianWithoutFmt(b *testing.B) {
 	// 23.67 ns with all int64s
 	// 22.99 ns with some uint8s
 	now := tai.Now()
 	for i := 0; i < b.N; i++ {
-		now.AsGreg()
+		now.AsGregorian()
 	}
 }
 
-func BenchmarkAsGregWithFmt(b *testing.B) {
+func BenchmarkAsGregorianWithFmt(b *testing.B) {
 	// 369.8 ns with all int64s
 	// 364.6 ns with some uint8s
 	now := tai.Now()
 	for i := 0; i < b.N; i++ {
-		g := now.AsGreg()
+		g := now.AsGregorian()
 		fmt.Sprintf("%d %d %d %d %d %d %d", g.Year, g.Month, g.Day, g.Hour, g.Min, g.Sec, g.Asec)
 	}
 }

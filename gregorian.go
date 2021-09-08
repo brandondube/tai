@@ -273,8 +273,8 @@ func DaysInMonth(m, y int) int {
 // formerly all i64 = 7x8 = 56 B
 // now two i64 + 5 u8 = 21 B
 
-// Greg represents a moment in the Proleptic Gregorian Calendar and the UTC time system
-type Greg struct {
+// Gregorian represents a moment in the Proleptic Gregorian Calendar and the UTC time system
+type Gregorian struct {
 	Asec  int64
 	Year  int
 	Month int
@@ -285,21 +285,21 @@ type Greg struct {
 }
 
 // Before returns true if g is before o
-func (g Greg) Before(o Greg) bool {
-	t1 := FromGreg(g)
-	t2 := FromGreg(o)
+func (g Gregorian) Before(o Gregorian) bool {
+	t1 := FromGregorian(g)
+	t2 := FromGregorian(o)
 	return t1.Before(t2)
 }
 
 // After returns true if g is after o
-func (g Greg) After(o Greg) bool {
-	t1 := FromGreg(g)
-	t2 := FromGreg(o)
+func (g Gregorian) After(o Gregorian) bool {
+	t1 := FromGregorian(g)
+	t2 := FromGregorian(o)
 	return t1.After(t2)
 }
 
 // Eq returns true if g and o represent the same instant in time
-func (g Greg) Eq(o Greg) bool {
+func (g Gregorian) Eq(o Gregorian) bool {
 	return (g.Asec == o.Asec &&
 		g.Year == o.Year &&
 		g.Month == o.Month &&

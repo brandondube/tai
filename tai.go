@@ -1,3 +1,4 @@
+// Package tai provides functionality for International Atomic Time (TAI).
 package tai
 
 import (
@@ -24,7 +25,7 @@ const (
 	// Day is the number of seconds per day
 	Day = 24 * Hour
 
-	// Year is the exact number of seconds per Julian year
+	// Year is the exact number of seconds per year in the TAI system
 	yearUnix      = 31564800
 	Year          = yearUnix
 	unixEpochSkew = 4383 * Day
@@ -50,13 +51,13 @@ var (
 	LastKnownBulletinCUpdate = 62
 	// LastKnownBulletinCTime is the date on which the last known Bulletin C
 	// was released
-	LastKnownBulletinCTimestamp = Greg{Year: 2021, Month: July, Day: 5} // time.Date(2021, time.July, 05, 0, 0, 0, 0, time.UTC)
+	LastKnownBulletinCTimestamp = Gregorian{Year: 2021, Month: July, Day: 5} // time.Date(2021, time.July, 05, 0, 0, 0, 0, time.UTC)
 
 	// PkgUpToDateUntil is the moment in time at which the last known bulletin C
 	// update is made invalid
-	PkgUpToDateUntil = Greg{Year: 2022, Month: January, Day: 5}
+	PkgUpToDateUntil = Gregorian{Year: 2022, Month: January, Day: 5}
 
-	leaps = []Leap{
+	leaps = []leap{
 		{63100800, 10},
 		{78735600, 11},
 		{94636800, 12},
@@ -90,13 +91,13 @@ var (
 	leaplock sync.RWMutex
 )
 
-// Leap represents a leapsecond
-type Leap struct {
+// leap represents a leapsecond
+type leap struct {
 	UnixUTC        int64
 	CumulativeSkew int64
 }
 
-func insertLeap(slc []Leap, index int, value Leap) []Leap {
+func insertLeap(slc []leap, index int, value leap) []leap {
 	if len(slc) == index { // nil or empty slice or after last element
 		return append(slc, value)
 	}
@@ -105,7 +106,7 @@ func insertLeap(slc []Leap, index int, value Leap) []Leap {
 	return slc
 }
 
-func removeLeap(slc []Leap, index int) []Leap {
+func removeLeap(slc []leap, index int) []leap {
 	return append(slc[:index], slc[index+1:]...)
 }
 
@@ -132,7 +133,7 @@ func RegisterLeapSecond(unixUTC int64, cumulativeSkew int64) error {
 		l := leaps[i]
 		if unixUTC > l.UnixUTC {
 			// leaps is explicitly sorted
-			leaps = insertLeap(leaps, i+1, Leap{UnixUTC: unixUTC, CumulativeSkew: cumulativeSkew})
+			leaps = insertLeap(leaps, i+1, leap{UnixUTC: unixUTC, CumulativeSkew: cumulativeSkew})
 			return nil
 		} else if unixUTC == l.UnixUTC {
 			if cumulativeSkew != l.CumulativeSkew {
@@ -226,17 +227,16 @@ func (t TAI) Eq(o TAI) bool {
 //
 // FromGreg can be replaced by a pair of calls to Date(...).AddHMS and insertion
 // of an Asec value
-func FromGreg(g Greg) TAI {
+func FromGregorian(g Gregorian) TAI {
 	d := DaysFromCivil(int(g.Year), int(g.Month), int(g.Day))
 	s := SecsEpochFromDays(d)
 	return TAI{Sec: int64(s), Asec: g.Asec}
 }
 
 // AsGreg converts a TAI timestamp to a time in the Gregorian Calendar
-func (t TAI) AsGreg() Greg {
+func (t TAI) AsGregorian() Gregorian {
 	d := DaysFromSecsEpoch(int(t.Sec))
 	Y, M, D := CivilFromDays(d)
-	// day := t.Sec / Day
 	rem := t.Sec % Day
 	// these two for loops are needed
 	// because Go has truncated division
@@ -254,7 +254,7 @@ func (t TAI) AsGreg() Greg {
 	rem %= Hour
 	mn := rem / Minute
 	rem %= Minute
-	return Greg{
+	return Gregorian{
 		Year:  Y,
 		Month: M,
 		Day:   D,
@@ -356,7 +356,7 @@ func FromTime(t time.Time) TAI {
 // Format panics if an unknown specifier is used.
 func (t TAI) Format(fmtspec string) string {
 	f := []rune(fmtspec)
-	g := t.AsGreg()
+	g := t.AsGregorian()
 	d := DaysFromSecsEpoch(int(t.Sec))
 	wd := WeekdayFromDays(d)
 	ily := IsLeapYear(int(g.Year))
