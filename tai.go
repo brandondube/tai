@@ -235,7 +235,7 @@ func FromGregorian(g Gregorian) TAI {
 
 // AsGreg converts a TAI timestamp to a time in the Gregorian Calendar
 func (t TAI) AsGregorian() Gregorian {
-	d := DaysFromSecsEpoch(int(t.Sec))
+	d := DaysFromSecsEpoch(t.Sec)
 	Y, M, D := CivilFromDays(d)
 	rem := t.Sec % Day
 	// these two for loops are needed
@@ -357,7 +357,7 @@ func FromTime(t time.Time) TAI {
 func (t TAI) Format(fmtspec string) string {
 	f := []rune(fmtspec)
 	g := t.AsGregorian()
-	d := DaysFromSecsEpoch(int(t.Sec))
+	d := DaysFromSecsEpoch(t.Sec)
 	wd := WeekdayFromDays(d)
 	ily := IsLeapYear(int(g.Year))
 	// the ordinal day of year is the number of days prior to the current

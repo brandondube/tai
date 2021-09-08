@@ -196,6 +196,8 @@ func DaysFromCivil(y, m, d int) int {
 	return era*eraDays + doe - epochDays
 }
 
+// CivilFromDays converts the number of days in the internal representation
+// to a day in the civil (Gregorian) calendar
 func CivilFromDays(days int) (y, m, d int) {
 	days += epochDays
 	var era, doe, yoe int
@@ -222,7 +224,8 @@ func CivilFromDays(days int) (y, m, d int) {
 	return
 }
 
-// 0 == sunday, 6 == sat; not ISO (0 == monday)
+// WeekFromDays returns the weekday number in the common programming,
+// ISO-incompatible notation where 0 == sunday, 6 == sat; not ISO (0 == monday)
 func WeekdayFromDays(days int) int {
 	if days >= -4 {
 		return (days + 4) % 7
@@ -230,6 +233,9 @@ func WeekdayFromDays(days int) int {
 	return (days+5)%7 + 6
 }
 
+// WeekdayDifference computes the number of days between weekday d1, d2.
+//
+// d1,d2 are in the range [0,6]
 func WeekdayDifference(d1, d2 int) int {
 	d1 -= d2
 	if d1 <= 6 {
@@ -238,6 +244,7 @@ func WeekdayDifference(d1, d2 int) int {
 	return d1 + 7
 }
 
+// NextWeekday returns the next weekday number after wd
 func NextWeekday(wd int) int {
 	if wd < 6 {
 		return wd + 1
@@ -245,6 +252,7 @@ func NextWeekday(wd int) int {
 	return 0
 }
 
+// PrevWeekday returns the weekday number proceeding wd
 func PrevWeekday(wd int) int {
 	if wd > 0 {
 		return wd - 1
@@ -252,12 +260,14 @@ func PrevWeekday(wd int) int {
 	return 6
 }
 
-func DaysFromSecsEpoch(secs int) int {
-	return secs / Day
+// DaysFromSecsEpoch returns the number of days in the internal representation
+// since the epoch in seconds
+func DaysFromSecsEpoch(secs int64) int {
+	return int(secs / Day)
 }
 
-func SecsEpochFromDays(days int) int {
-	return days * Day
+func SecsEpochFromDays(days int) int64 {
+	return int64(days) * Day
 }
 
 // DaysInMonth returns the number of days in the given month and year
@@ -269,11 +279,7 @@ func DaysInMonth(m, y int) int {
 	return daysPerNonLeapMonth[m]
 }
 
-// Greg
-// formerly all i64 = 7x8 = 56 B
-// now two i64 + 5 u8 = 21 B
-
-// Gregorian represents a moment in the Proleptic Gregorian Calendar and the UTC time system
+// Gregorian represents a moment in the Proleptic Gregorian Calendar and the TAI time system
 type Gregorian struct {
 	Asec  int64
 	Year  int
