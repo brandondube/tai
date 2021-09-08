@@ -213,10 +213,8 @@ func (t TAI) After(o TAI) bool {
 
 // Eq returns true if t and o represent the same instant in time
 func (t TAI) Eq(o TAI) bool {
-	if t.Sec == o.Sec && t.Asec == o.Asec {
-		return true
-	}
-	return false
+	return t.Sec == o.Sec && t.Asec == o.Asec
+
 }
 
 // FromGreg returns the TAI value corresponding to a moment in the Proleptic Gregorian Calendar
