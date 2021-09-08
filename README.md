@@ -70,7 +70,8 @@ for which the attosecond resolution of this package is a tremendous improvement.
 3) Is the package threadsafe?
 
 Yes.  The leapsecond table is protected by a RWMutex.  This limits ultimate
-concurrent performance when converting to/from stdlib Time values.
+concurrent performance when converting to/from stdlib Time values.  Nothing else
+in the package is sensitive to concurrent execution.
 
 4) Why use global state for the leapsecond table?
 
