@@ -13,7 +13,7 @@ t := tai.TAI{Sec: 123456789, Asec: 300 * tai.Millisecond}
 To break a TAI value into is constituent Calendar parts:
 
 ```go
-g := t.AsGreg()
+g := t.AsGregorian()
 // g.Year
 // g.Month
 // g.Day
@@ -22,7 +22,7 @@ g := t.AsGreg()
 // g.Sec
 ```
 
-"Greg" is shorthand for Gregorian, the calendar system used by most of the world.
+Gregorian is the calendar system used by most of the world.
 
 ## Formatting
 
@@ -84,8 +84,8 @@ creates an enhanced opportunity for inconsistent state and incorrect programs.
 5) Will there be more features to mimic a larger portion of the time package?
 
 The time package is privileged with runtime hooks for some of its features, e.g.
-timers.  The stdlib has a greater variety of serialization options for e.g. non-allocating approaches.
-If desired, please implement them with a pull request.
+timers.  The stdlib has a greater variety of serialization options for e.g.
+non-allocating approaches.  If desired, please implement them with a pull request.
 
 The various methods for accessing parts of a time's representation such as the
 weekday may be added at a later date.  It is unclear how valuable these are
@@ -104,3 +104,10 @@ tests for interesting or key moments.
 
 Stdlib time is the ugly duckling in this respect.  pkg tai is more in keeping with
 other similar tools.
+
+8) How stable is this package?  Why isn't it 1.0?
+
+The core mechanics or algorithms of this package are stable.  The Tai/Gregorian
+interfaces will not see a reduction in the scope of public methods.  Some more
+internal functions for Calendric calculations may be made private in the future,
+which would present a breaking change.  V1.0 is deferred for this reason.
