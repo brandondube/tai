@@ -304,6 +304,9 @@ func Now() TAI {
 }
 
 // Date returns the TAI value that corresponds to y,m,d in the Proleptic Gregorian Calendar
+//
+// if y/m/d are outside the expected range (m in [1,12], days ~= in [1,30] depending on m)
+// the behavior is undefined and the result will likely be quietly incorrect
 func Date(y, m, d int) TAI {
 	d = DaysFromCivil(y, m, d)
 	s := SecsEpochFromDays(d)
