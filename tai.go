@@ -28,9 +28,6 @@ const (
 	// Year is the exact number of seconds per year in the TAI system
 	Year          = 31564800 * Second
 	unixEpochSkew = 4383 * Day
-	// FiveYearUnix      = 5 * YearUnix
-	// UnixFiveYInternet = 157795200
-	// hourMinSecSkew    = 1958 * Year
 
 	// Attosecond is the base unit for TAI fractional time
 	Attosecond = 1
