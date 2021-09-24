@@ -10,6 +10,14 @@ import (
 	"github.com/brandondube/tai"
 )
 
+func TestRegisterLeapSecondFunctions(t *testing.T) {
+	err := tai.RegisterLeapSecond(1e12, 40)
+	if err != nil {
+		t.Fatal("non-nil err registering a leapsecond in the distant future", err)
+	}
+	tai.RemoveLeapSecond(1e12) // cleanup
+}
+
 func TestFuzzTaiToGreg(t *testing.T) {
 	fuzzTaiToGreg(t, 1e6)
 }
@@ -122,6 +130,36 @@ func TestTaiFormat(t *testing.T) {
 	out := ta.Format(tai.RFC3339)
 	if out != "2009-11-10T23:00:00Z" {
 		t.Fail()
+	}
+	out = ta.Format(tai.RFC3339Micro)
+	if out != "2009-11-10T23:00:00.000000Z" {
+		t.Fail()
+	}
+
+	out = ta.Format(tai.RFC3339Nano)
+	if out != "2009-11-10T23:00:00.000000000Z" {
+		t.Fail()
+	}
+}
+
+func TestNowAsTimeEq(t *testing.T) {
+	now := tai.Now()
+	nowT := now.AsTime()
+	nowT2 := time.Now()
+	diff := nowT2.Sub(nowT)
+	if diff < 0 {
+		diff = -diff
+	}
+	if diff > 100*time.Millisecond {
+		t.Fatal("tai now and stdlib now differ by > 100 msec")
+	}
+}
+
+func TestFromTimeAsTimeRoundTrip(t *testing.T) {
+	now := time.Now()
+	now2 := tai.FromTime(now).AsTime()
+	if !now.Equal(now2) {
+		t.Fatal()
 	}
 }
 
