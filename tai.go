@@ -120,8 +120,8 @@ func removeLeap(slc []leap, index int) []leap {
 // inserting a leap prior to the first leap second (Jan 1, 1970) will produce an
 //error, since there were no leap seconds prior to that time.
 //
-// RegisterLeapSecond is not thread safe; two calls of the function may not be
-// executed concurrently.
+// RegisterLeapSecond is thread safe; any in-progress AsTime/FromTime conversions
+// will complete before the table is updated.
 func RegisterLeapSecond(unixUTC int64, cumulativeSkew int64) error {
 	leaplock.Lock()
 	defer leaplock.Unlock()
@@ -149,6 +149,8 @@ func RegisterLeapSecond(unixUTC int64, cumulativeSkew int64) error {
 // if removal of a leap would result in fewer entries in the table than are known
 // to have been published by IERS when pkg tai was last updated, this function
 // panics.
+//
+// RemoveLeapSecond is thread-safe with the same guarantees as RegisterLeapSecond
 func RemoveLeapSecond(unixUTC int64) {
 	leaplock.Lock()
 	defer leaplock.Unlock()
