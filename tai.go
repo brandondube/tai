@@ -13,6 +13,7 @@ import (
 const (
 	RFC3339      = "%Y-%m-%dT%H:%M:%S%Z"
 	RFC3339Micro = "%Y-%m-%dT%H:%M:%S.%f%Z"
+	RFC3339Nano  = "%Y-%m-%dT%H:%M:%S.%F%Z"
 	// Second is the base unit for TAI and UNIX time since epoch
 	Second = 1
 
@@ -381,6 +382,8 @@ func FromTime(t time.Time) TAI {
 //
 // - %f Microsecond as a six digit decimal number
 //
+// - %F Nanosecond as a nine digit decimal number
+//
 // - %z The letter "Z" (timezone, but TAI only exists in the UTC timezone)
 //
 // - %j Ordinal day of year, e.g. 364
@@ -391,7 +394,7 @@ func FromTime(t time.Time) TAI {
 func (t TAI) Format(fmtspec string) string {
 	f := []rune(fmtspec)
 	g := t.AsGregorian()
-	d := DaysFromSecsEpoch(t.Sec)
+	d := DaysFromSecsEpoch(t.sec)
 	wd := WeekdayFromDays(d)
 	ily := IsLeapYear(int(g.Year))
 	// the ordinal day of year is the number of days prior to the current
@@ -409,6 +412,7 @@ func (t TAI) Format(fmtspec string) string {
 		last rune
 		next rune
 	)
+	b.Grow(len(f) + 10)
 	// parsing the string "%y-%m"
 	// we hit %, do not copy
 	// y, trigger specifier, do not copy literally
@@ -467,6 +471,8 @@ func (t TAI) Format(fmtspec string) string {
 				b.WriteString(fmt.Sprintf("%02d", g.Sec))
 			case 'f':
 				b.WriteString(fmt.Sprintf("%06d", g.Asec/Microsecond))
+			case 'F':
+				b.WriteString(fmt.Sprintf("%09d", g.Asec/Nanosecond))
 			case 'Z':
 				b.WriteRune('Z')
 			case 'j':
