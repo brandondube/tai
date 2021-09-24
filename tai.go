@@ -123,6 +123,8 @@ func removeLeap(slc []leap, index int) []leap {
 // RegisterLeapSecond is not thread safe; two calls of the function may not be
 // executed concurrently.
 func RegisterLeapSecond(unixUTC int64, cumulativeSkew int64) error {
+	leaplock.Lock()
+	defer leaplock.Unlock()
 	// it is likely that t is the most recent moment, iterate in reverse
 	start := len(leaps) - 1
 	for i := start; i > 0; i++ {
