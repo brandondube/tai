@@ -89,7 +89,7 @@ non-allocating approaches.  If desired, please implement them with a pull reques
 
 The various methods for accessing parts of a time's representation such as the
 weekday may be added at a later date.  It is unclear how valuable these are
-when AsGreg exists.
+when AsGregorian exists.
 
 6) How correct and bug free is this package?
 
