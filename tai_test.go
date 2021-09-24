@@ -126,8 +126,7 @@ func TestTaiFormat(t *testing.T) {
 }
 
 func TestUnixEpoch(t *testing.T) {
-	var ta tai.TAI
-	ta.Sec = 4383 * tai.Day // this is the unix Epoch (12y)
+	ta := tai.Tai(4383*tai.Day, 0)
 	date := ta.AsGregorian()
 	var failparts []string
 	if date.Year != 1970 {

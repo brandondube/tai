@@ -185,18 +185,33 @@ func skewUnix(s int64) int64 {
 // The zero value of TAI represents the atomic time Epoch of Jan 1, 1958 at 00:00:00
 type TAI struct {
 	// Sec is the number of whole seconds since TAI Epoch
-	Sec int64
+	sec int64
 	// Asec is the number of attoseconds representing fractional time
 	// Behavior is undefined if Asec > 1e18
-	Asec int64
+	asec int64
+}
+
+func Tai(sec, asec int64) TAI {
+	if asec > 1e18 {
+		spareSecs := asec / 1e18
+		asec %= 1e18
+		sec += spareSecs
+	}
+	// this is not the fastest possible way to fix negative asec, but
+	// this error correction will be rare
+	for asec < 0 {
+		asec += 1e18
+		sec--
+	}
+	return TAI{sec: sec, asec: asec}
 }
 
 // Before returns true if t is before o
 func (t TAI) Before(o TAI) bool {
-	if t.Sec < o.Sec {
+	if t.sec < o.sec {
 		return true
 	}
-	if t.Sec == o.Sec && t.Asec < o.Asec {
+	if t.sec == o.sec && t.asec < o.asec {
 		return true
 	}
 	return false
@@ -204,10 +219,10 @@ func (t TAI) Before(o TAI) bool {
 
 // After returns true if t is after o
 func (t TAI) After(o TAI) bool {
-	if t.Sec > o.Sec {
+	if t.sec > o.sec {
 		return true
 	}
-	if t.Sec == o.Sec && t.Asec > o.Asec {
+	if t.sec == o.sec && t.asec > o.asec {
 		return true
 	}
 	return false
@@ -215,7 +230,7 @@ func (t TAI) After(o TAI) bool {
 
 // Eq returns true if t and o represent the same instant in time
 func (t TAI) Eq(o TAI) bool {
-	return t.Sec == o.Sec && t.Asec == o.Asec
+	return t.sec == o.sec && t.asec == o.asec
 
 }
 
@@ -226,14 +241,14 @@ func (t TAI) Eq(o TAI) bool {
 func FromGregorian(g Gregorian) TAI {
 	d := DaysFromCivil(int(g.Year), int(g.Month), int(g.Day))
 	s := SecsEpochFromDays(d)
-	return TAI{Sec: int64(s), Asec: g.Asec}
+	return TAI{sec: int64(s), asec: g.Asec}
 }
 
 // AsGreg converts a TAI timestamp to a time in the Gregorian Calendar
 func (t TAI) AsGregorian() Gregorian {
-	d := DaysFromSecsEpoch(t.Sec)
+	d := DaysFromSecsEpoch(t.sec)
 	Y, M, D := CivilFromDays(d)
-	rem := t.Sec % Day
+	rem := t.sec % Day
 	// these two for loops are needed
 	// because Go has truncated division
 	// the latter is needed because the former
@@ -257,14 +272,14 @@ func (t TAI) AsGregorian() Gregorian {
 		Hour:  int(hr),
 		Min:   int(mn),
 		Sec:   int(rem),
-		Asec:  t.Asec,
+		Asec:  t.asec,
 	}
 }
 
 // Unix returns the UNIX representation of t with nanosecond resolution
 func (t TAI) Unix() (secs, nsecs int64) {
-	secs = t.Sec - unixEpochSkew
-	nsecs = t.Asec / Nanosecond
+	secs = t.sec - unixEpochSkew
+	nsecs = t.asec / Nanosecond
 	skew := skewUnix(secs)
 	secs -= skew
 	return
@@ -288,7 +303,7 @@ func Unix(seconds, nsec int64) TAI {
 	skew := skewUnix(seconds)
 	seconds += unixEpochSkew
 	seconds += skew
-	return TAI{Sec: seconds, Asec: nsec * Nanosecond}
+	return TAI{sec: seconds, asec: nsec * Nanosecond}
 }
 
 // Now returns the current TAI moment, up to the level of maintenance in the
@@ -306,14 +321,14 @@ func Now() TAI {
 func Date(y, m, d int) TAI {
 	d = DaysFromCivil(y, m, d)
 	s := SecsEpochFromDays(d)
-	return TAI{Sec: int64(s), Asec: 0}
+	return TAI{sec: int64(s), asec: 0}
 }
 
 // AddHMS returns t offset by the given hours, minutes, and seconds
 func (t TAI) AddHMS(h, m, s int) TAI {
-	t.Sec += int64(h * Hour)
-	t.Sec += int64(m * Minute)
-	t.Sec += int64(s)
+	t.sec += int64(h * Hour)
+	t.sec += int64(m * Minute)
+	t.sec += int64(s)
 	return t
 }
 
