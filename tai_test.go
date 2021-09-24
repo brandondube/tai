@@ -163,6 +163,28 @@ func TestFromTimeAsTimeRoundTrip(t *testing.T) {
 	}
 }
 
+func TestTaiBeforeAfterEq(t *testing.T) {
+	t1 := tai.Tai(1, 0)
+	t2 := tai.Tai(1, 1)
+	t3 := tai.Tai(0, 1)
+	t4 := tai.Tai(-1, 0)
+	t5 := tai.Tai(0, 1)
+	if !t1.Before(t2) {
+		t.Fatal()
+	}
+	if !t1.After(t4) {
+		t.Fatal()
+	}
+	if !t2.After(t1) {
+		t.Fatal()
+	}
+	if !t3.Before(t1) {
+		t.Fatal()
+	}
+	if !t5.Eq(t3) {
+		t.Fatal()
+	}
+}
 func TestUnixEpoch(t *testing.T) {
 	ta := tai.Tai(4383*tai.Day, 0)
 	date := ta.AsGregorian()
