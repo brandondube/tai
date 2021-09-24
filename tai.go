@@ -244,7 +244,7 @@ func (t TAI) Eq(o TAI) bool {
 func FromGregorian(g Gregorian) TAI {
 	d := DaysFromCivil(int(g.Year), int(g.Month), int(g.Day))
 	s := SecsEpochFromDays(d)
-	return TAI{sec: int64(s), asec: g.Asec}
+	return Tai(int64(s), g.Asec)
 }
 
 // AsGreg converts a TAI timestamp to a time in the Gregorian Calendar
