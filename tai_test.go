@@ -185,6 +185,88 @@ func TestTaiBeforeAfterEq(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func TestTaiNegativeAsecs(t *testing.T) {
+	t1 := tai.Tai(10, 1e18)
+	t2 := tai.Tai(11, 0)
+	t3 := tai.Tai(12, -1e18)
+	t4 := tai.Tai(12, -1e18-10)
+	if !t1.Eq(t2) {
+		t.Fatalf("t1: %+v is not equal to t2: %+v", t1, t2)
+	}
+	if !t3.Eq(t2) {
+		t.Fatalf("t2: %+v is not equal to t3: %+v", t2, t3)
+	}
+	// remaining attoseconds should be positive and seconds decremented
+	if !t2.After(t4) {
+		t.Fatalf("t2: %+v is not after to t4: %+v", t2, t4)
+	}
+}
+
+func TestTaiAdd(t *testing.T) {
+	t1 := tai.Tai(10, 5)
+	t2 := tai.Tai(13, 6)
+	t3 := t1.Add(3, 1)
+	t4 := tai.Tai(12, -1e18-10)
+	t5 := t4.Add(0, 16+2*1e18)
+	t6 := tai.Tai(100, 1)
+	t7 := t6.Add(-78, -9*1e18).Add(0, -9*1e18).Add(0, 9*1e18+5)
+	if !t3.Eq(t2) {
+		t.Fatalf("t2: %+v not equal to t3: %+v", t2, t3)
+	}
+	if !t5.Eq(t2) {
+		t.Fatalf("t2: %+v not equal to t5: %+v", t2, t5)
+	}
+	if !t7.Eq(t2) {
+		t.Fatalf("t2: %+v not equal to t7: %+v", t2, t7)
+	}
+}
+
+func TestTaiAddMilliseconds(t *testing.T) {
+	t1 := tai.Tai(0, 0)
+	t2 := tai.Tai(9e15, 0)
+	t3 := t1.AddMilliseconds(9e18)
+	t4 := tai.Tai(100, 100)
+	t5 := t4.AddMilliseconds(-1e5)
+	t6 := tai.Tai(0, 100)
+	if !t3.Eq(t2) {
+		t.Fatalf("t2: %+v not equal to t3: %+v", t2, t3)
+	}
+	if !t5.Eq(t6) {
+		t.Fatalf("t6: %+v not equal to t5: %+v", t6, t5)
+	}
+}
+
+func TestTaiAddMicroseconds(t *testing.T) {
+	t1 := tai.Tai(0, 0)
+	t2 := tai.Tai(9e12, 0)
+	t3 := t1.AddMicroseconds(9e18)
+	t4 := tai.Tai(100, 100)
+	t5 := t4.AddMicroseconds(-1e8)
+	t6 := tai.Tai(0, 100)
+	if !t3.Eq(t2) {
+		t.Fatalf("t2: %+v not equal to t3: %+v", t2, t3)
+	}
+	if !t5.Eq(t6) {
+		t.Fatalf("t6: %+v not equal to t5: %+v", t6, t5)
+	}
+}
+
+func TestTaiAddNanoseconds(t *testing.T) {
+	t1 := tai.Tai(0, 0)
+	t2 := tai.Tai(9e9, 0)
+	t3 := t1.AddNanoseconds(9e18)
+	t4 := tai.Tai(100, 100)
+	t5 := t4.AddNanoseconds(-1e11)
+	t6 := tai.Tai(0, 100)
+	if !t3.Eq(t2) {
+		t.Fatalf("t2: %+v not equal to t3: %+v", t2, t3)
+	}
+	if !t5.Eq(t6) {
+		t.Fatalf("t6: %+v not equal to t5: %+v", t6, t5)
+	}
+}
+
 func TestUnixEpoch(t *testing.T) {
 	ta := tai.Tai(4383*tai.Day, 0)
 	date := ta.AsGregorian()
