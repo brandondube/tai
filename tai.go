@@ -354,17 +354,17 @@ func (t TAI) Add(sec, asec int64) TAI {
 // in the Add method. This is a limitation of the int64 type
 // The Following methods can add up to 2^63 Millseconds, MicroSeconds and Nanoseconds respectively
 
-// AddMs returns t with added Milliseconds
+// AddMilliseconds returns t with added Milliseconds
 func (t TAI) AddMilliseconds(msec int64) TAI {
 	return t.Add(msec/1e3, (msec%1e3)*Millisecond)
 }
 
-// AddMus returns t with added Nanoseconds
+// AddMicroseconds returns t with added Microseconds
 func (t TAI) AddMicroseconds(musec int64) TAI {
 	return t.Add(musec/1e6, (musec%1e6)*Microsecond)
 }
 
-// AddNs returns t with added Nanoseconds
+// AddNanoseconds returns t with added Nanoseconds
 func (t TAI) AddNanoseconds(nsec int64) TAI {
 	return t.Add(nsec/1e9, (nsec%1e9)*Nanosecond)
 }
