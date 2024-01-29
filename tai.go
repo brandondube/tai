@@ -119,7 +119,7 @@ func removeLeap(slc []leap, index int) []leap {
 // skew need not be 1 and need not be positive
 //
 // inserting a leap prior to the first leap second (Jan 1, 1970) will produce an
-//error, since there were no leap seconds prior to that time.
+// error, since there were no leap seconds prior to that time.
 //
 // RegisterLeapSecond is thread safe; any in-progress AsTime/FromTime conversions
 // will complete before the table is updated.
@@ -195,17 +195,17 @@ type TAI struct {
 }
 
 func Tai(sec, asec int64) TAI {
-	if asec > 1e18 {
-		spareSecs := asec / 1e18
-		asec %= 1e18
-		sec += spareSecs
-	}
-	// this is not the fastest possible way to fix negative asec, but
-	// this error correction will be rare
-	for asec < 0 {
+
+	spareSecs := asec / 1e18
+	asec %= 1e18
+	sec += spareSecs
+
+	//by definition 0 <= asec < 1e18
+	if asec < 0 {
 		asec += 1e18
-		sec--
+		sec -= Second
 	}
+
 	return TAI{sec: sec, asec: asec}
 }
 
@@ -333,6 +333,40 @@ func (t TAI) AddHMS(h, m, s int) TAI {
 	t.sec += int64(m * Minute)
 	t.sec += int64(s)
 	return t
+}
+
+// Add returns t offset by the given seconds and attoseconds
+func (t TAI) Add(sec, asec int64) TAI {
+
+	t.asec += asec
+	t.sec += t.asec/1e18 + sec
+	t.asec %= 1e18
+
+	if t.asec < 0 {
+		t.asec += 1e18
+		t.sec -= Second
+	}
+	return t
+}
+
+// The Following three methods are for convenience.
+// They also take care of the fact that you cannot add more than 9.223372e+18 (2^63) attoseconds
+// in the Add method. This is a limitation of the int64 type
+// The Following methods can add up to 2^63 Millseconds, MicroSeconds and Nanoseconds respectively
+
+// AddMilliseconds returns t with added Milliseconds
+func (t TAI) AddMilliseconds(msec int64) TAI {
+	return t.Add(msec/1e3, (msec%1e3)*Millisecond)
+}
+
+// AddMicroseconds returns t with added Microseconds
+func (t TAI) AddMicroseconds(musec int64) TAI {
+	return t.Add(musec/1e6, (musec%1e6)*Microsecond)
+}
+
+// AddNanoseconds returns t with added Nanoseconds
+func (t TAI) AddNanoseconds(nsec int64) TAI {
+	return t.Add(nsec/1e9, (nsec%1e9)*Nanosecond)
 }
 
 // AsTime returns t as a Time object
