@@ -18,7 +18,7 @@ g := t.AsGregorian()
 // g.Month
 // g.Day
 // g.Hour
-// g.Minute
+// g.Min
 // g.Sec
 ```
 
