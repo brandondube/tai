@@ -45,14 +45,14 @@ const (
 var (
 	// LastKnownBulletinCUpdate is the last known issue of Bulletin C by the
 	// IERS that pkg tai was updated for
-	LastKnownBulletinCUpdate = 68
+	LastKnownBulletinCUpdate = 70
 	// LastKnownBulletinCTime is the date on which the last known Bulletin C
 	// was released
-	LastKnownBulletinCTimestamp = Gregorian{Year: 2024, Month: July, Day: 4}
+	LastKnownBulletinCTimestamp = Gregorian{Year: 2025, Month: July, Day: 7}
 
 	// PkgUpToDateUntil is the moment in time at which the last known bulletin C
 	// update is made invalid
-	PkgUpToDateUntil = Gregorian{Year: 2025, Month: January, Day: 1}
+	PkgUpToDateUntil = Gregorian{Year: 2026, Month: January, Day: 1}
 
 	leaps = []leap{
 		{63100800, 10},
