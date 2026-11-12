@@ -36,8 +36,19 @@ func fuzzTaiToGreg(t *testing.T, cases int) {
 			day = 1
 		}
 		ta := tai.Date(year, month, day).AddHMS(hour, minute, second)
+		tb := tai.FromGregorian(tai.Gregorian{
+			Year:  year,
+			Month: month,
+			Day:   day,
+			Hour:  hour,
+			Min:   minute,
+			Sec:   second,
+		})
 		date := ta.AsGregorian()
 		var failparts []string
+		if !ta.Eq(tb) {
+			failparts = append(failparts, fmt.Sprintf("Date/AddHMS did not agree with FromGregorian"))
+		}
 		if date.Year != year {
 			failparts = append(failparts, fmt.Sprintf("wrong year: got %d expected %d", date.Year, year))
 		}
